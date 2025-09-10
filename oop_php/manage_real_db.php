@@ -50,5 +50,49 @@
         }
 
         // Getters methods
+        public function getId() { return $this -> id; }
+        public function getName() { return $this -> name; }
+        public function getPrice() { return $this -> price; }
+        public function getStock() { return $this -> stock; }
+
+        // Method for updating stock
+        public function reduceStock($quantity)
+        {
+            if ($this -> stock >= $quantity)
+            {
+                $this -> stock -= $quantity;
+                $this -> updateEnBD();
+                return true;
+            }
+            return false;
+        }
+
+        private function updateEnBD()
+        {
+            $db = DatabaseConnection::getInstance() -> getConnection();
+            $stmt = $db -> prepare("UPDATE products SET stock = ? WHERE id = ?");
+            $stmt -> execute([$this -> stock, $this -> id]);
+        }
+
+        // Static method for search products
+        public static function findForId($id)
+        {
+            $db = DatabaseConnection::getInstance() -> getConnection();
+            $stmt = $db -> prepare("SELECT * FROM products WHERE id = ?")
+            $stmt -> execute([$id]);
+            $data = $stmt -> fetch(PDD::FETCH_ASSOC);
+
+            if ($data)
+            {
+                return new Product
+                (
+					$data['id'],
+					$data['name'],
+					$data['price'],
+					$data['stock']
+                );
+            }
+            return null;
+        }
     }
 ?>
